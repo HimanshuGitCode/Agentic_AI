@@ -1,0 +1,152 @@
+{
+  "name": "Agentic AI - Stock Analysis Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {}
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "value": "1HvhM4YiNZtWBjy5oT5immcAsPuCLSoCypkIZ4I0IQ5k",
+          "mode": "list",
+          "cachedResultName": "Stock Agent Retrieval",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HvhM4YiNZtWBjy5oT5immcAsPuCLSoCypkIZ4I0IQ5k/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1HvhM4YiNZtWBjy5oT5immcAsPuCLSoCypkIZ4I0IQ5k/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -280,
+        -140
+      ],
+      "id": "8f8286fc-466e-4812-9c3d-e9826a601740",
+      "name": "Google Sheets Trigger",
+      "credentials": {
+        "googleSheetsTriggerOAuth2Api": {
+          "id": "EWKFLZ3YaY0SwFpw",
+          "name": "Google Sheets Trigger account 6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Stock Analysis AI Agent\n\n<Role & Objective>\nYou are a Stock Analysis AI Agent that analyzes a stock and returns a SINGLE email-ready HTML document. Do NOT return Markdown, code fences, or JSON. Output pure HTML only.\n\n<Input (already provided via n8n JSON)>\nStock Ticker = {{ $json['Stock Ticker'] }}\nStock Price = {{ $json['Stock Price'] }}\n52-Week High = {{ $json['52-High'] }}\n52-Week Low = {{ $json['52-Low'] }}\nAverage Daily Volume = {{ $json['Daily Avg Volume'] }}\nP/E Ratio = {{ $json['P/E Ratio'] }}\nEPS = {{ $json.EPS }}\nTrading Volume = {{ $json.Volume }}\n\n<Task>\n1) Parse inputs as numbers where applicable.\n2) Compute:\n   - Breakout/Breakdown Potential:\n     • “Near Breakout” if Stock Price >= 95% of 52-Week High\n     • “Near Breakdown” if Stock Price <= 105% of 52-Week Low\n     • Otherwise “Neutral Range”\n   - Unusual Market Activity:\n     • “High Trading Interest” if Trading Volume > Average Daily Volume\n     • Else “Normal Trading Activity”\n   - Valuation:\n     • “Potentially Undervalued” if 0 < P/E Ratio < 15\n     • Else “Potentially Overvalued”\n   - Profitability:\n     • “Profitable” if EPS > 0\n     • Else “Unprofitable”\n   - Liquidity:\n     • “High Market Interest” if Trading Volume > 1.5 × Average Daily Volume\n     • Else “Stable Liquidity”\n   - Volatility:\n     • Volatility Score = (52-Week High − 52-Week Low) / 52-Week Low\n     • Category: “High Volatility” if score > 0.5, else “Low Volatility”\n   - Investment Category (pick one based on overall evidence):\n     • “Growth Stock” if trend is strong (Near Breakout or strong interest) with reasonable valuation/profitability\n     • “Value Stock” if valuation is low and price is closer to 52-week low with positive EPS\n   - Recommendation: Choose Buy / Hold / Sell with a brief rationale tied to the above signals.\n\n3) Output Format — STRICTLY return a single HTML email:\n   • Use a 600px max-width centered table layout\n   • Inline CSS only (email safe)\n   • Sections:\n     - Header with Stock Ticker + {{ $now }}\n     - KPI grid (Price, 52W High/Low, Volume vs Avg, P/E, EPS)\n     - “Signals” summary (Trend & Momentum, Valuation, Liquidity, Volatility, Investment Type)\n     - Recommendation callout with rationale\n   • No external fonts; use system fonts (Arial, sans-serif)\n   • No images required; use simple badges (background color) where helpful\n\n<Constraints>\n- Return HTML ONLY. No Markdown, no backticks, no JSON.\n- Keep it concise, scannable, and mobile-friendly.\n- Numbers should be formatted with thousands separators where relevant.\n\n\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        -140
+      ],
+      "id": "9a59d009-1647-4f95-8c0c-5edeb4f8a1f9",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -60,
+        100
+      ],
+      "id": "45370e11-eec8-4986-b377-464e31b87db0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "OOqhFMbkVqYLHnmt",
+          "name": "OpenAi account 28"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Google Sheets Trigger').item.json.Email }}",
+        "subject": "Daily stock recommendations",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        300,
+        -140
+      ],
+      "id": "51503fb5-c74d-4755-8cee-d9a5a29b26c7",
+      "name": "Send a message",
+      "webhookId": "15a0c7e4-97ec-4608-b06a-8554aa95d08c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "iaQvBTQCmwImmh0y",
+          "name": "Stock Analysis sent for learning purpose only"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Sheets Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "92e5e420-a104-4d1e-a045-36c11342ee09",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c834a9579367041be18612d09e6a972de2107501ab6fadb2ba4995f50a812801"
+  },
+  "id": "imwMgxp10i2SdF1D",
+  "tags": []
+}

@@ -1,0 +1,232 @@
+{
+  "name": "Video to blog generator",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        680
+      ],
+      "id": "68c0edf9-e193-4b8a-8868-526ba9f58a93",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0c384b57-b010-47e9-903b-849d305d505a",
+              "name": "Youtube video url",
+              "value": "https://www.youtube.com/watch?v=b-Pn0yXL9y8",
+              "type": "string"
+            },
+            {
+              "id": "b852768c-6ee1-450e-9971-99818dbb3eff",
+              "name": "recipient email address",
+              "value": "akhil@theproductspace.co.in",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -200,
+        680
+      ],
+      "id": "e0885a84-9a2c-4a7d-8a25-45aa7b064f10",
+      "name": "Input parameters"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app.dumplingai.com/api/v1/get-youtube-transcript",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "videoUrl",
+              "value": "={{ $json['Youtube video url'] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        20,
+        680
+      ],
+      "id": "1342210a-789a-4dfe-8d28-220f36f3f9e5",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "nf0u1VhDbKfHrfbI",
+          "name": "Bearer Auth account 11"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Write a detailed SEO-optimized blog post using the provided YouTube video transcript.\n\nUse the transcript content as the foundation for the blog, extracting key ideas, topics, and themes to highlight. Ensure the blog post is structured with clear headings, subheadings, and paragraphs, incorporating SEO keywords naturally. The tone should be engaging and informative, targeted towards readers interested in the video's subject matter.\n\n- Identify the main topics and themes of the transcript.\n- Extract key points, arguments, or stories present in the transcript.\n- Determine suitable SEO keywords related to the content and integrate them meaningfully.\n- Craft a title that is both engaging and SEO-friendly.\n- Write a comprehensive and well-structured blog post with an introduction, body, and conclusion.\n- Use bullet points, lists, or numbers if necessary for clarity and readability.\n\n# Steps\n\n1. **Transcript Analysis**: Begin by thoroughly reading the provided transcript to understand the core messages and detailed content.\n   \n2. **Identify Key Points**: Extract important points, arguments, or themes that should be highlighted in the blog post.\n\n3. **SEO Keyword Research**: Determine relevant SEO keywords that align with the content’s themes and audiences.\n\n4. **Blog Structuring**: Create an outline for the blog post, arranging sections logically with appropriate headings (H2, H3) for SEO.\n\n5. **Content Writing**: Write each section based on the transcript’s content, ensuring the inclusion of SEO keywords and maintaining a clear and engaging tone.\n\n6. **Review and Edit**: Proofread for grammatical accuracy and SEO optimization. Ensure smooth flow and coherence.\n\n# Output Format\n\nRespond in the following JSON format:\n```json\n{\n  \"subject\": \"Why Great Learners Make the Best Leaders\",\n  \"preheader\": \"Learning + teaching = compounding growth.\",\n  \"html\": \"<!doctype html><html>...INLINE-CSS + EMAIL-SAFE TABLE LAYOUT...</html>\",\n  \"text\": \"Plain-text fallback here…\"\n}\n\n```\n\n- Title: Craft an SEO-friendly engaging title.\n- Blog Image Prompt: Provide a textual prompt that can be used to generate an image relevant to the blog post content. We prefer human first images with text.\n- Description: Summarize the blog post in a concise and engaging way.\n- Content: Write a comprehensive blog using the transcript as reference, structured with clear headings and engaging content.\n\n# Examples\n\n### Input\n[YouTube Transcript]\n\n### Output\n```json\n{\n  \"title\": \"Understanding Renewable Energy: A Path to Sustainability\",\n  \"blogImagePrompt\": \"An illustration of various renewable energy sources like solar panels and wind turbines with a man / women.”,\n  \"description\": \"Explore the importance and impact of renewable energy on our planet. This blog delves into key themes and actionable insights from the transcript, providing a comprehensive understanding of sustainable energy solutions.\",\n  \"html\": \"<!doctype html><html>...INLINE-CSS + EMAIL-SAFE TABLE LAYOUT...</html>\"\n}\n```\n\n(This example reflects the JSON structure. Use real content from the transcript to fill these sections.)",
+              "role": "system"
+            },
+            {
+              "content": "={{ $json.transcript }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        220,
+        680
+      ],
+      "id": "d1c1d4e6-039a-456e-a617-24e5919a7d52",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "qHoAeAZZRryEY5sx",
+          "name": "OpenAi account 31"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Input parameters').item.json['recipient email address'] }}",
+        "subject": "={{ $('Message a model').item.json.message.content.title }}",
+        "message": "={{ $('Message a model').item.json.message.content.html }}",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        800,
+        680
+      ],
+      "id": "a1cb7408-0b74-4b3a-a6b7-2e158b941a2a",
+      "name": "Send a message1",
+      "webhookId": "4f2edd0d-8edd-4f7b-ba4a-12893219c438",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "iaQvBTQCmwImmh0y",
+          "name": "Stock Analysis sent for learning purpose only"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        520,
+        680
+      ],
+      "id": "18fca253-5015-4bd4-ada5-dbe791f97a19",
+      "name": "Generate an image",
+      "credentials": {
+        "openAiApi": {
+          "id": "qHoAeAZZRryEY5sx",
+          "name": "OpenAi account 31"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Input parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Input parameters": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4140af96-ec3d-4d6e-bf40-21fd15ebb468",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c834a9579367041be18612d09e6a972de2107501ab6fadb2ba4995f50a812801"
+  },
+  "id": "ouUJNRT9eKpBSwyE",
+  "tags": []
+}

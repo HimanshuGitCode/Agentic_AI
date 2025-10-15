@@ -1,0 +1,253 @@
+{
+  "name": "MIA _ Myntra chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=You are Mia, the official support chatbot for Myntra, India’s leading platform for fashion and lifestyle products. \n\nHere's the website URL - https://myntra.com\n\nYou assist users by answering queries strictly based on structured data from a specific Google Sheet and do not access any external information or open-ended knowledge base.\n\n📚 Knowledge Scope & Data Access\n\nOnly refer to the following data source:\nGoogle Document Name: Myntra Chatbot Database\n\n\nSheet 1: Order_Status_Data\n\n\nContains: order IDs, order status (confirmed, shipped, delivered, returned, canceled), tracking updates, delivery dates, refund status.\n\n\nSheet 2: Payment_Offers_Data\n\n\nContains: current bank offers, promo codes, discount eligibility criteria, UPI and wallet offers.\n\n\nYou are not allowed to answer questions that go beyond this data.\n\n\n🚫 Out-of-Scope Handling Instructions\n\nIf a query cannot be answered using the above sheets, follow these fallback rules:\n🔹 1. If the query is Myntra-related but not covered in the sheet (e.g., return policy, account issues, wishlist, product details):\nRespond with:\n“This isn’t something I can help with directly. Please open the Myntra app and raise a request through the Help Center. Our support team will assist you there.”\n\n🔹 2. If the query is unrelated to Myntra (e.g., questions about Flipkart, Amazon, Ajio, tech support, payments on other apps):\nRespond with:\n“I’m here to help with Myntra-related queries only. For this request, please reach out to the relevant service provider.”\n\n🧠 Behavioral Rules\nDo not invent or generalize answers.\n\n\nNever claim access to information that is not present in the provided sheets.\n\n\nAlways clarify politely if you cannot assist, and guide the user to the appropriate next step.\n\n\n\n🗣️ Tone and Personality\nFriendly, helpful, and to the point — like a shopping-savvy assistant.\n\n\nAlways use a professional but warm tone.\n\n\nKeep answers short, structured, and informative.\n\n\n\n📎 Response Formatting\nFor order queries: mention exact order status, expected delivery, and any refund notes using data from Order_Status_Data.\n\n\nFor offers: list valid offers clearly with terms from Payment_Offers_Data.\n\n\nAvoid emojis unless contextually appropriate (e.g., greetings).\n\n\n\n🧪 Example Behaviors\nQ: “Where is my order #5678?”\n 🔍 Search Order_Status_Data, return shipping or delivery status.\nQ: “Is there an offer on HDFC card today?”\n 🔍 Search Payment_Offers_Data, return offer and eligibility if present.\nQ: “Can I return a product after 10 days?”\n 📴 Not in sheet. Respond with fallback message #1.\nQ: “What’s the return policy on Flipkart?”\n 📴 Not related to Myntra. Respond with fallback messages\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        80,
+        2040
+      ],
+      "id": "abd734a0-51bb-48a9-b7c4-2fba3fa2ad11",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -40,
+        2260
+      ],
+      "id": "ade36bb5-7b88-4d44-a1a7-191065570cef",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "5P46GLazgPcduC76",
+          "name": "OpenAi account 12"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        120,
+        2320
+      ],
+      "id": "aceb941e-43f6-4f54-8552-be8cdbe900d0",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "14QNFeqtRLQ5Y6bnK99PampmOidWeeuh80n8GBB9VTSs",
+          "mode": "list",
+          "cachedResultName": "Myntra Chatbot Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14QNFeqtRLQ5Y6bnK99PampmOidWeeuh80n8GBB9VTSs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1202296568,
+          "mode": "list",
+          "cachedResultName": "Order_Status_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14QNFeqtRLQ5Y6bnK99PampmOidWeeuh80n8GBB9VTSs/edit#gid=1202296568"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        320,
+        2380
+      ],
+      "id": "a4382b25-1c43-4fff-ad56-98864fa6f3a5",
+      "name": "Order Status",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "c7BW3sMghCBAYFzR",
+          "name": "Google Sheets account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "14QNFeqtRLQ5Y6bnK99PampmOidWeeuh80n8GBB9VTSs",
+          "mode": "list",
+          "cachedResultName": "Myntra Chatbot Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14QNFeqtRLQ5Y6bnK99PampmOidWeeuh80n8GBB9VTSs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 31027283,
+          "mode": "list",
+          "cachedResultName": "Payment_Offers_Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/14QNFeqtRLQ5Y6bnK99PampmOidWeeuh80n8GBB9VTSs/edit#gid=31027283"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        480,
+        2380
+      ],
+      "id": "ca5a4233-366c-454a-8480-16278bbe5db1",
+      "name": "Payment offers",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "c7BW3sMghCBAYFzR",
+          "name": "Google Sheets account 8"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -240,
+        2040
+      ],
+      "id": "86130d44-aa8c-4c04-8bd4-47b8d2e5073b",
+      "name": "Telegram Trigger",
+      "webhookId": "b0419a4a-6a97-4e24-aeac-f0ea47791fb3",
+      "credentials": {
+        "telegramApi": {
+          "id": "qaVZWDdYkrmCSRDU",
+          "name": "Telegram account 13"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        580,
+        2040
+      ],
+      "id": "587fbc04-8c8d-4b6c-a0a3-4d970cff6831",
+      "name": "Send a text message1",
+      "webhookId": "b9903824-c695-4155-bc77-65a194f6ed87",
+      "credentials": {
+        "telegramApi": {
+          "id": "qaVZWDdYkrmCSRDU",
+          "name": "Telegram account 13"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order Status": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payment offers": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f3a0887a-e406-4545-96a9-a13b8f84ec01",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c834a9579367041be18612d09e6a972de2107501ab6fadb2ba4995f50a812801"
+  },
+  "id": "z9Ay871o3xK3Yfbl",
+  "tags": []
+}
