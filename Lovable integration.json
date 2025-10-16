@@ -1,0 +1,93 @@
+{
+  "name": "Lovable integration",
+  "nodes": [
+    {
+      "parameters": {
+        "resource": "image",
+        "prompt": "={{ $json.body[0].query }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -380,
+        -200
+      ],
+      "id": "e42fb5af-a64f-484b-b0ee-3c80cdce70e6",
+      "name": "Generate an image",
+      "credentials": {
+        "openAiApi": {
+          "id": "KbjscsiYPBEenseN",
+          "name": "OpenAi account 19"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "81f364bf-bde3-4954-b214-f5b91d6e32b2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -660,
+        -200
+      ],
+      "id": "c15beccc-0fbd-4008-8013-a4499e4c970a",
+      "name": "Webhook",
+      "webhookId": "81f364bf-bde3-4954-b214-f5b91d6e32b2"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -160,
+        -200
+      ],
+      "id": "4ed2f745-ea88-4e4f-82ae-d00822315d81",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generate an image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "840373e5-d8b8-4b97-9c74-4c8c5f369d51",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c834a9579367041be18612d09e6a972de2107501ab6fadb2ba4995f50a812801"
+  },
+  "id": "IHUDVRATw9J2EN2T",
+  "tags": []
+}
